@@ -58,6 +58,18 @@ export class Board {
     this.side = this.deck.splice(0, 6);
   }
 
+  public playBench(card: Card): void {
+    this.benchField.push(card);
+    this.hand = this.hand.filter((c) => c !== card);
+  }
+
+  public switchPokemon(card: Card): void {
+    if (this.battleField === null) return;
+    this.benchField.push(this.battleField);
+    this.battleField = card;
+    this.benchField = this.benchField.filter((c) => c !== card);
+  }
+
   public getGameState(): {
     hand: Card[];
     battleField: Card | null;

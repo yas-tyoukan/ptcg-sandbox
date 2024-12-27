@@ -112,12 +112,75 @@ const main = (board: Board) => {
     );
   })();
   board.prayPokemonOnBattleField(battleCard);
+  if (board.battleField === null) return;
 
   // サイドを出す
   board.putSide();
 
   // 1枚ドローする
   board.draw(1);
+
+  // TODO: 実際の動きをシミュレートするよりも、パターンを洗い出して確立を求めた方が良いかも
+
+  if (
+    board.side.filter((card) => card.name === 'アラブルタケ').length >= 2 ||
+    board.side.filter((card) => card.name === 'ブーストエナジー古代').length >=
+      2
+  ) {
+    // サイド落ちを確認して、毒にできない場合は終了
+    return 0;
+  }
+
+  if (
+    board.side.filter((card) => card.name === 'ヤレユータンV').length >= 1 &&
+    board.hand.find((card) => card.name === 'ブーストエナジー古代') ===
+      undefined
+  ) {
+    // ヤレユータンVがサイド、かつ、手札にブーストエナジー古代がない場合は終了
+    return 0;
+  }
+
+  // 手札にプレシャスキャリーとブーストエナジー古代を持ってくる
+  (() => {
+    if (
+      board.hand.find((card) => card.name === 'プレシャスキャリー') &&
+      board.hand.find((card) => card.name === 'ブーストエナジー古代')
+    )
+      return;
+    // 手札にない場合は、ヤレユータンVをバトル場に出して持ってくる
+
+    // ヤレユータンVをバトル場に出す
+    (() => {
+      if (board.battleField.name === 'ヤレユータンV') return;
+      if (board.battleField.name === 'ケーシィ') {
+        // バトル場のケーシィ
+        const kc = board.battleField;
+        // 手札のヤレユータンV
+        const yareyutan = board.hand.find(
+          (card) => card.name === 'ヤレユータンV',
+        );
+        if (yareyutan !== undefined) {
+          // ヤレユータンVが手札にある場合、ベンチに出してバトル場と入れ替える
+          board.playBench(yareyutan);
+          board.switchPokemon(yareyutan);
+          board.benchField = board.benchField.filter((card) => card !== kc);
+          board.deck.push(kc);
+          board.shuffleDeck();
+        }
+        // バトル場がケーシィなら特性で入れ替える
+        if (
+          board.hand.find((card) => card.name === 'ネストボール') ||
+          board.hand.find((card) => card.name === 'ハイパーボール')
+        ) {
+          // ネストボールかハイパーボールが手札にある場合、ヤレユータンVをバトル場に出す
+        }
+      }
+    })();
+  })();
+
+  // ヤレユータンVを使って必要なパーツを揃えるケース
+
+  // バトル場がヤレユータンVの場合、好きなカードを持ってくる
 
   // 必要なカードを山札から引く
   fetchRequiredCards(board);
