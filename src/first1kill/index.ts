@@ -44,6 +44,7 @@ function setupBoard(board: Board): void {
   // 3. スタジアム「危険な密林」を場に出す
   board.placeStadium('危険な密林');
 }
+
 function switchBattlePokemon(board: Board): void {
   board.switchBattleField('モモワロウ');
 }
@@ -121,6 +122,61 @@ const main = (board: Board) => {
   board.draw(1);
 
   // TODO: 実際の動きをシミュレートするよりも、パターンを洗い出して確立を求めた方が良いかも
+  // サイド落ちで毒にできないケース
+  if (
+    (board.side.filter((card) => card.name === 'アラブルタケ').length >= 2 &&
+      board.hand.find((card) => card.name === 'ヒスイのヘビーボール') ===
+        undefined) ||
+    board.side.filter((card) => card.name === 'ブーストエナジー古代').length >=
+      2
+  ) {
+    // アラブルタケがサイド落ちでヒスイのヘビーボールが手札にない ( // TODO 封印石でヒスイのヘビーボール持って来れるが一旦無視 )
+    return 0;
+  }
+
+  // 手札だけで100出せるケース
+  if (
+    // バトル場がモモワロウ
+    (board.battleField.name === 'モモワロウ' ||
+      (board.battleField.retreatCost !== undefined &&
+        board.battleField.retreatCost <= 1 &&
+        (board.hand.find((card) => card.name === '緊急ボード') ||
+          board.hand.find((card) => card.name === '超エネルギー')))) &&
+    board.hand.find((card) => card.name === 'モモワロウ') &&
+    board.hand.find((card) => card.name === 'かがやくヒスイオオニューラ') &&
+    board.hand.find((card) => card.name === 'アラブルタケ') &&
+    board.hand.find((card) => card.name === 'ブーストエナジー古代') &&
+    board.hand.find((card) => card.name === '危険な密林')
+  ) {
+    return 100;
+  }
+
+  if (
+    // バトル場を逃がせる
+    (board.battleField.name === 'ケーシィ' ||
+      (board.battleField.retreatCost !== undefined &&
+        board.battleField.retreatCost <= 1 &&
+        (board.hand.find((card) => card.name === '緊急ボード') ||
+          board.hand.find((card) => card.name === '超エネルギー')))) &&
+    board.hand.find((card) => card.name === 'モモワロウ') &&
+    board.hand.find((card) => card.name === 'かがやくヒスイオオニューラ') &&
+    board.hand.find((card) => card.name === 'アラブルタケ') &&
+    board.hand.find((card) => card.name === 'ブーストエナジー古代') &&
+    board.hand.find((card) => card.name === '危険な密林')
+  ) {
+    return 100;
+  }
+
+  // ヤレユータンVスタートのケース
+  if (board.battleField.name === 'ヤレユータンV') {
+    // ケーシィの場合、ヤレユータンVをバトル場に出す
+    const yareyutan = board.hand.find((card) => card.name === 'ヤレユータンV');
+    if (yareyutan !== undefined) {
+      board.playBench(yareyutan);
+      board.switchPokemon(yareyutan);
+    }
+  }
+
   /**
    * 基本条件（毒を与えられない）:
    * ブーストエナジー古代が全てサイドにある場合: 0ダメージ
@@ -146,14 +202,6 @@ const main = (board: Board) => {
    * プレシャスキャリー条件:
    * プレシャスキャリーを使用して必要なポケモンを集められる場合: 上記の条件に準じる
    */
-  if (
-    board.side.filter((card) => card.name === 'アラブルタケ').length >= 2 ||
-    board.side.filter((card) => card.name === 'ブーストエナジー古代').length >=
-      2
-  ) {
-    // サイド落ちを確認して、毒にできない場合は終了
-    return 0;
-  }
 
   if (
     board.side.filter((card) => card.name === 'ヤレユータンV').length >= 1 &&

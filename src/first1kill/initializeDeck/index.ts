@@ -18,23 +18,62 @@ const createCards = (num: number, name: string, options: Partial<Card> = {}) =>
     .map(() => createCard(name, options));
 
 export const initializeDeck = () => {
-  const deck = createCards(4, 'ケーシィ', { basic: true, pokemon: true })
+  const deck = createCards(4, 'ケーシィ', {
+    basic: true,
+    pokemon: true,
+    retreatCost: 1,
+  })
     .concat(createCards(4, 'ユンゲラー', { pokemon: true }))
     .concat(createCards(1, 'フーディンex', { pokemon: true }))
-    .concat(createCards(2, 'ミミッキュ', { energy: true }))
-    .concat(createCards(2, 'アラブルタケ', { pokemon: true, basic: true }))
-    .concat(createCards(2, 'モモワロウ', { pokemon: true, basic: true }))
+    .concat(createCards(2, 'ミミッキュ', { energy: true, retreatCost: 1 }))
+    .concat(
+      createCards(2, 'アラブルタケ', {
+        pokemon: true,
+        basic: true,
+        retreatCost: 3,
+      }),
+    )
+    .concat(
+      createCards(2, 'モモワロウ', {
+        pokemon: true,
+        basic: true,
+        retreatCost: 1,
+      }),
+    )
     .concat(
       createCards(1, 'かがやくヒスイオオニューラ', {
         pokemon: true,
         basic: true,
+        retreatCost: 1,
       }),
     )
-    .concat(createCards(1, 'ヤレユータンV', { pokemon: true, basic: true }))
-    .concat(createCards(1, 'ラティアスex', { pokemon: true, basic: true }))
-    .concat(createCards(1, 'モモワロウex', { pokemon: true, basic: true }))
     .concat(
-      createCards(1, 'ガチグマアカツキex', { pokemon: true, basic: true }),
+      createCards(1, 'ヤレユータンV', {
+        pokemon: true,
+        basic: true,
+        retreatCost: 2,
+      }),
+    )
+    .concat(
+      createCards(1, 'ラティアスex', {
+        pokemon: true,
+        basic: true,
+        retreatCost: 2,
+      }),
+    )
+    .concat(
+      createCards(1, 'モモワロウex', {
+        pokemon: true,
+        basic: true,
+        retreatCost: 1,
+      }),
+    )
+    .concat(
+      createCards(1, 'ガチグマアカツキex', {
+        pokemon: true,
+        basic: true,
+        retreatCost: 3,
+      }),
     )
     .concat(createCards(4, 'ネストボール', { item: true }))
     .concat(createCards(2, 'ハイパーボール', { item: true }))
