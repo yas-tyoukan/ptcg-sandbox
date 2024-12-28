@@ -5,12 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "biome format --write ./src"
+    "format": "biome format --write ./src",
+    "first1kill": "ts-node ./src/first1kill/index.ts",
+    "first1kill:calc": "ts-node ./src/first1kill/calc.ts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@types/node": "^22.10.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }
