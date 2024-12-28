@@ -15,15 +15,21 @@ export class Board {
     this.battleField = null;
     this.benchField = [];
     this.side = [];
+    this.shuffleDeck();
+    this.reset();
   }
 
-  setup(): void {
+  reset(): void {
     this.deck = [...this.originalDeck];
     this.hand = [];
     this.battleField = null;
     this.benchField = [];
     this.side = [];
     this.shuffleDeck();
+  }
+
+  setup(): void {
+    this.reset();
     this.draw(7);
   }
 
@@ -40,7 +46,7 @@ export class Board {
   }
 
   public draw(num: number): void {
-    this.hand = this.deck.splice(0, num);
+    this.hand = this.hand.concat(this.deck.splice(0, num));
     // TODO: ドローできたかどうかを返す
   }
 
