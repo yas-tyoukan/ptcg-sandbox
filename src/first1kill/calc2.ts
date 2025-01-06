@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as readline from 'node:readline';
+import { initializeDeck } from './initializeDeck';
 import type { FirstTurnData } from './types/FirstTurnData';
 
 const includes = <T>(array: T[], value: T): boolean => array.includes(value);
@@ -9,7 +10,21 @@ const exclude = <T>(array: T[], value: T): void => {
 };
 const countIncludes = <T>(array: T[], value: T): number =>
   array.filter((v) => v === value).length;
-
+const createDeck = (
+  sides: string[],
+  hand: string[],
+  draw: string,
+): string[] => {
+  const deckCardNames = initializeDeck().map((card) => card.name);
+  for (const c of sides) {
+    exclude(deckCardNames, c);
+  }
+  for (const c of hand) {
+    exclude(deckCardNames, c);
+  }
+  exclude(deckCardNames, draw);
+  return deckCardNames;
+};
 const todoLogOnceFlag: { [key: string]: boolean } = {};
 function calculatePoisonDamage(
   { sides, hand, draw }: FirstTurnData,
@@ -32,6 +47,7 @@ function calculatePoisonDamage(
   )
     return 0;
 
+  const deck = createDeck(sides, hand, draw);
   let battleField: string;
   const benchFields: string[] = [];
   // 逃げるを使ったか
