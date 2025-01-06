@@ -10,11 +10,7 @@ const exclude = <T>(array: T[], value: T): void => {
 };
 const countIncludes = <T>(array: T[], value: T): number =>
   array.filter((v) => v === value).length;
-const createDeck = (
-  sides: string[],
-  hand: string[],
-  draw: string,
-): string[] => {
+const createDeck = ({ sides, hand, draw }: FirstTurnData): string[] => {
   const deckCardNames = initializeDeck().map((card) => card.name);
   for (const c of sides) {
     exclude(deckCardNames, c);
@@ -28,6 +24,7 @@ const createDeck = (
 const todoLogOnceFlag: { [key: string]: boolean } = {};
 function calculatePoisonDamage(
   { sides, hand, draw }: FirstTurnData,
+  deck: string[],
   line: number,
 ): number | null {
   /*
@@ -38,16 +35,15 @@ function calculatePoisonDamage(
    * - その他主要カードは1枚ずつ
    */
   // ブーストエナジー古代が全てサイド落ちしている場合は絶対に毒にできない
-  if (countIncludes(sides, 'ブーストエナジー古代') >= 3) return 0;
+  if (!includes([...hand, draw, ...deck], 'ブーストエナジー古代')) return 0;
 
-  // ヒスイのヘビーボールとアラブルタケ2枚がサイド落ちしている場合は絶対に毒にできない
+  // ヒスイのヘビーボールとアラブルタケがサイド落ちしている場合は絶対に毒にできない
   if (
-    includes(sides, 'ヒスイのヘビーボール') &&
-    countIncludes(sides, 'アラブルタケ') >= 2
+    !includes([...hand, draw, ...deck], 'ヒスイのヘビーボール') &&
+    !includes([...hand, draw, ...deck], 'アラブルタケ')
   )
     return 0;
 
-  const deck = createDeck(sides, hand, draw);
   let battleField: string;
   const benchFields: string[] = [];
   // 逃げるを使ったか
@@ -94,10 +90,47 @@ function calculatePoisonDamage(
     throw new Error('no exist basic pokemon');
   }
 
+  // 1枚引く
+  hand.push(draw);
+
   // たねポケモンは全部ベンチに出す（本来は5匹しか出せないが、ここでは考慮しない）
-  // TODO
+  const basicPokemon = [
+    'ケーシィ',
+    'ヤレユータンV',
+    'モモワロウ',
+    'かがやくヒスイオオニューラ',
+    'ミミッキュ',
+    'モモワロウex',
+    'ラティアスex',
+    'アラブルタケ',
+    'ガチグマアカツキex',
+  ];
+  for (const pokemon of basicPokemon) {
+    if (!includes(hand, pokemon)) continue;
+    benchFields.push(pokemon);
+    exclude(hand, pokemon);
+  }
+
+  // ヒスイのヘビーボールを使って出せるポケモンは全部ベンチに出す
+  while (includes(hand, 'ヒスイのヘビーボール')) {
+    exclude(hand, 'ヒスイのヘビーボール');
+    // TODO ヤレユータンV、アラブルタケ、モモワロウ、かがやくヒスイオオニューラ、モモワロウex、ラティアスexのいずれかを出す
+    // 出す優先度は状況によって変わる
+    // バトル場を逃がせるならヤレユータンVを出してバトル場に出したいが、そのためにはラティアスexやモモワロウexが必要かもしれないし、
+    // 封印石がサイド落ちしていてプレシャスキャリーがなくアラブルタケを出せないならアラブルタケを出す必要がある
+  }
 
   // ボールを使って出せるポケモンは全部ベンチに出す
+  while (includes(hand, 'ネストボール') || includes(hand, 'ハイパーボール')) {
+    const ball = includes(hand, 'ネストボール')
+      ? 'ネストボール'
+      : 'ハイパーボール';
+    exclude(hand, ball);
+    // TODO ヤレユータンV、アラブルタケ、モモワロウ、かがやくヒスイオオニューラ、モモワロウex、ラティアスexのいずれかを出す
+    // 出す優先度は状況によって変わる
+    // バトル場を逃がせるならヤレユータンVを出してバトル場に出したいが、そのためにはラティアスexやモモワロウexが必要かもしれないし、
+    // 封印石がサイド落ちしていてプレシャスキャリーがなくアラブルタケを出せないならアラブルタケを出す必要がある
+  }
   // TODO
 
   // プレシャスキャリーを使って出せるポケモンは全部ベンチに出す
@@ -179,8 +212,10 @@ async function processCSV(inputFile: string, outputFile: string) {
       poisonDamage: fields[14] ? Number.parseInt(fields[14], 10) : null,
     };
 
+    const deck = createDeck(data);
+
     if (data.poisonDamage === null) {
-      data.poisonDamage = calculatePoisonDamage(data, lineCount);
+      data.poisonDamage = calculatePoisonDamage(data, deck, lineCount);
     }
     const newLine =
       data.poisonDamage !== null
