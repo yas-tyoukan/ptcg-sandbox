@@ -111,13 +111,30 @@ function calculatePoisonDamage(
     exclude(hand, pokemon);
   }
 
-  // ヒスイのヘビーボールを使って出せるポケモンは全部ベンチに出す
-  while (includes(hand, 'ヒスイのヘビーボール')) {
+  // ヒスイのヘビーボールを使って出せるポケモンは全部ベンチに出す(ヒスイのヘビーボールは1枚しかない前提)
+  if (includes(hand, 'ヒスイのヘビーボール')) {
     exclude(hand, 'ヒスイのヘビーボール');
-    // TODO ヤレユータンV、アラブルタケ、モモワロウ、かがやくヒスイオオニューラ、モモワロウex、ラティアスexのいずれかを出す
     // 出す優先度は状況によって変わる
-    // バトル場を逃がせるならヤレユータンVを出してバトル場に出したいが、そのためにはラティアスexやモモワロウexが必要かもしれないし、
+    // 例えばバトル場を逃がせるならヤレユータンVを出してバトル場に出したいが、そのためにはラティアスexやモモワロウexが必要かもしれないし、
     // 封印石がサイド落ちしていてプレシャスキャリーがなくアラブルタケを出せないならアラブルタケを出す必要がある
+    // サイドにヤレユータンV、アラブルタケ、モモワロウ、かがやくヒスイオオニューラ、モモワロウex、ラティアスexのいずれもいない場合
+    // FIXME: 出す優先度は状況によって変わるが、一旦優先度固定
+    const priority = [
+      'ヤレユータンV',
+      'アラブルタケ',
+      'モモワロウ',
+      'モモワロウex',
+      'ラティアスex',
+      'かがやくヒスイオオニューラ',
+    ];
+    for (const p of priority) {
+      if (!includes(sides, p) || includes([battleField, ...benchFields], p))
+        continue;
+      benchFields.push(p);
+      exclude(sides, p);
+      sides.push('ヒスイのヘビーボール');
+      break;
+    }
   }
 
   // ボールを使って出せるポケモンは全部ベンチに出す
@@ -126,14 +143,50 @@ function calculatePoisonDamage(
       ? 'ネストボール'
       : 'ハイパーボール';
     exclude(hand, ball);
-    // TODO ヤレユータンV、アラブルタケ、モモワロウ、かがやくヒスイオオニューラ、モモワロウex、ラティアスexのいずれかを出す
+    // ヤレユータンV、アラブルタケ、モモワロウ、かがやくヒスイオオニューラ、モモワロウex、ラティアスexのいずれかを出す
     // 出す優先度は状況によって変わる
     // バトル場を逃がせるならヤレユータンVを出してバトル場に出したいが、そのためにはラティアスexやモモワロウexが必要かもしれないし、
     // 封印石がサイド落ちしていてプレシャスキャリーがなくアラブルタケを出せないならアラブルタケを出す必要がある
+    // FIXME: 出す優先度は状況によって変わるが、一旦優先度固定
+    const priority = [
+      'ヤレユータンV',
+      'アラブルタケ',
+      'モモワロウ',
+      'モモワロウex',
+      'ラティアスex',
+      'かがやくヒスイオオニューラ',
+    ];
+    let isExistPokemon = false;
+    for (const p of priority) {
+      if (!includes(deck, p) || includes([battleField, ...benchFields], p))
+        continue;
+      benchFields.push(p);
+      exclude(deck, p);
+      isExistPokemon = true;
+      break;
+    }
+    if (!isExistPokemon) break;
   }
-  // TODO
 
   // プレシャスキャリーを使って出せるポケモンは全部ベンチに出す
+  if (includes(hand, 'プレシャスキャリー')) {
+    exclude(hand, 'プレシャスキャリー');
+    const priority = [
+      'ヤレユータンV',
+      'アラブルタケ',
+      'モモワロウ',
+      'モモワロウex',
+      'ラティアスex',
+      'かがやくヒスイオオニューラ',
+    ];
+    for (const p of priority) {
+      if (!includes(deck, p) || includes([battleField, ...benchFields], p))
+        continue;
+      benchFields.push(p);
+      exclude(deck, p);
+      break;
+    }
+  }
   // TODO
 
   if (!includes([...hand, draw], 'ブーストエナジー古代')) {
